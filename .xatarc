@@ -1,0 +1,6 @@
+{
+  "databaseURL": "https://Jason-Gutierrez-s-workspace-jpc00l.us-east-1.xata.sh/db/budget-boy",
+  "codegen": {
+    "output": "src/xata.ts"
+  }
+}

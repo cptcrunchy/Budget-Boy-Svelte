@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(cuid())
+  name           String
+  email          String         @unique
+  picture        String
+  xata_updatedat DateTime       @default(now()) @db.Timestamptz(6)
+  xata_id        String         @unique(map: "User__pgroll_new_xata_id_key") @default(dbgenerated("('rec_'::text || (xata_private.xid())::text)"))
+  xata_version   Int            @default(0)
+  xata_createdat DateTime       @default(now()) @db.Timestamptz(6)
+  sessions       Session[]
+  passwords      Password[]
+  oAuthAccounts  OAuthAccount[]
+}
+
+model OAuthAccount {
+  providerId     String
+  providerUserId String
+  userId         String
+  user           User   @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+  @@id([providerId, providerUserId])
+}
+
+model Password {
+  id             Int    @id @default(autoincrement())
+  hashedPassword String
+  userId         String
+  user           User   @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
+
+model Session {
+  id             String   @id
+  userId         String
+  expiresAt      DateTime
+  xata_createdat DateTime @default(now()) @db.Timestamptz(6)
+  xata_updatedat DateTime @default(now()) @db.Timestamptz(6)
+  xata_id        String   @unique(map: "Session__pgroll_new_xata_id_key") @default(dbgenerated("('rec_'::text || (xata_private.xid())::text)"))
+  xata_version   Int      @default(0)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
