@@ -28,24 +28,26 @@ export const mainNavLinks = {
 		href: route('/'),
 		ariaLabel: 'Go to home page'
 	}),
-
 	dashboard: createNavLink({
 		title: 'Dashboard',
 		href: route('/dashboard'),
 		ariaLabel: 'Go to dashboard page'
 	}),
-
 	login: createNavLink({
 		title: 'Login',
 		href: route('/auth/login'),
 		ariaLabel: 'Go to login page'
 	}),
-
 	register: createNavLink({
 		title: 'Register',
 		href: route('/auth/register'),
 		ariaLabel: 'Go to register page'
-	})
+	}),
+  about: createNavLink({
+    title: 'About',
+    href: route('/about'),
+    ariaLabel: 'Company About Page'
+  })
 } as const;
 
 export const LOGIN_ROUTE = mainNavLinks.login.href;

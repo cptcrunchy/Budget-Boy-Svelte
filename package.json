@@ -46,6 +46,7 @@
 		"inngest": "^3.21.0",
 		"just-extend": "^6.2.0",
 		"oslo": "^1.2.1",
+		"resend": "^3.4.0",
 		"svelte-french-toast": "^1.2.0",
 		"svelte-meta-tags": "^3.1.2",
 		"sveltekit-view-transition": "^0.5.3",

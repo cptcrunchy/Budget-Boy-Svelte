@@ -6,7 +6,8 @@
   const className: HTMLInputAttributes["class"] = undefined;
   export { className as class };
   export let type: HTMLInputAttributes["type"];
-  export const value: string | null | undefined = "";
+  // biome-ignore lint/style/useConst: export value must be bindable / writable
+  export let value: string | null | undefined = "";
   export const name: string = "";
   export const label: string = "";
   export const placeholder: string = "";
@@ -39,7 +40,6 @@
   <input
     {name}
     {...{ type }}
-    dir="auto"
     bind:value
     {maxlength}
     {spellcheck}

@@ -16,8 +16,7 @@
   export { className as class };
 
   // static classes
-  const staticClasses =
-    "absolute left-0 z-50 w-full px-4 pt-10 transition-transform duration-300 top-full h-svh sm:h-full sm:relative sm:w-fit sm:-translate-x-0 sm:p-0 bg-secondary sm:bg-transparent";
+  const staticClasses = "navbar";
 
   const sessionLinks = {
     home: mainNavLinks.home,
@@ -26,7 +25,7 @@
 
   const noneSessionLinks = {
     home: mainNavLinks.home,
-    dashboard: mainNavLinks.dashboard,
+    about: mainNavLinks.about,
     login: mainNavLinks.login,
     register: mainNavLinks.register,
   };
@@ -39,7 +38,7 @@
   aria-label="Main Navigation"
   class={[staticClasses, className].join("")}
 >
-  <ul class="grid gap-5 *:*:w-full sm:flex sm:gap-2">
+  <ul class="sm:flex gap-5 *:*:w-full hidden sm:gap-2">
     {#each Object.values(isUserLoggedIn ? sessionLinks : noneSessionLinks) as link}
       {@const isCurrentPage =
         $page.url.pathname === link.href ? "page" : undefined}

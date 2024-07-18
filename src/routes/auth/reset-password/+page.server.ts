@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
 import { redirect } from 'sveltekit-flash-message/server';
-import { message, superValidate } from 'sveltekit-superforms/server';
+import { message, superValidate } from 'sveltekit-superforms';
 
 import { eq } from 'drizzle-orm';
 import { Argon2id } from 'oslo/password';

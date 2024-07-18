@@ -4,7 +4,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { redirect as flashMessageRedirect } from 'sveltekit-flash-message/server';
 
 import { Argon2id } from 'oslo/password';
-import { message, setError, superValidate } from 'sveltekit-superforms/server';
+import { message, setError, superValidate } from 'sveltekit-superforms';
 
 import { route } from '$lib/ROUTES';
 import {

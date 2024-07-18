@@ -1,7 +1,7 @@
 import type { Handle } from "@sveltejs/kit";
-import { lucia } from "$lib/server/auth";
 import { sequence } from "@sveltejs/kit/hooks";
-import { deleteSessionCookie } from "$lib/server/authUtils";
+import { createAndSetSession, deleteSessionCookie } from "$lib/server/authUtils.server";
+import { lucia } from "$lib/server/luciaAuth.server";
 
 const luciaGuard: Handle = async ({ event, resolve }) => {
   const sessionId = event.cookies.get(lucia.sessionCookieName);
@@ -13,11 +13,7 @@ const luciaGuard: Handle = async ({ event, resolve }) => {
 
   const { session, user } = await lucia.validateSession(sessionId);
   if (session?.fresh) {
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    event.cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: ".",
-      ...sessionCookie.attributes,
-    });
+    createAndSetSession(lucia, session.id, event.cookies);
   }
   if (!session) {
     await deleteSessionCookie(lucia, event.cookies);
@@ -35,7 +31,7 @@ const authGuard: Handle = async ({ event, resolve }) => {
       where: { id: user.id },
       include: { oAuthAccounts: true },
     });
-    user.oAuthAccounts = userInfo.oAuthAccounts;
+    user.OAuthAccounts = userInfo.oAuthAccounts;
   }
 
   return resolve(event);

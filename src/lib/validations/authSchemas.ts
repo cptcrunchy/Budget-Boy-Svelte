@@ -35,9 +35,7 @@ export const RegisterUserZodSchema = z.object({
 		.string()
 		.min(MIN_NAME_LENGTH, NAME_MIN_ERROR_MESSAGE)
 		.max(MAX_NAME_LENGTH, NAME_MAX_ERROR_MESSAGE),
-
 	email: emailZodSchema,
-
 	password: advancedPasswordSchema
 });
 

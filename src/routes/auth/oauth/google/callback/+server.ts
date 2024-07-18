@@ -14,16 +14,7 @@ import { database } from '$lib/database/database.server';
 import { googleOauth, lucia } from '$lib/database/luciaAuth.server';
 import { oauthAccountsTable, usersTable } from '$lib/database/schema';
 
-type GoogleUser = {
-	sub: string;
-	name: string;
-	given_name: string;
-	family_name: string;
-	picture: string;
-	email: string;
-	email_verified: boolean;
-	locale: string;
-};
+
 
 export const GET: RequestHandler = async (event) => {
 	const code = event.url.searchParams.get('code');

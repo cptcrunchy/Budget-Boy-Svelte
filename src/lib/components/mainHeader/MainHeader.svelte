@@ -8,8 +8,11 @@
 
 <header class="relative mb-10 border-b">
   <div class="container flex items-center justify-between p-2">
-    <a role="button" href={route("/")} class="btn"> Budget Boy </a>
-
+    <div class="avatar">
+      <a role="link" href={route("/")} class="w-24">
+        <img src="/assets/logo.svg" alt="Budget Boy" />
+      </a>
+    </div>
     <div class="flex gap-2">
       <MainNav />
       <ThemeToggler />

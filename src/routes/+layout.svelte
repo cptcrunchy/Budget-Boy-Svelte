@@ -12,8 +12,9 @@
   import "../app.css";
 
   import SiteMainHeader from "$components/mainHeader/MainHeader.svelte";
+  import type { PageData } from "./$types";
 
-  export let data;
+  export let data: PageData;
 
   const flash = getFlash(page);
 

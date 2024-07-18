@@ -1,11 +1,9 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-
-import { message, superValidate } from 'sveltekit-superforms/server';
-
+import { message, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 import { generateId } from 'lucia';
 import { Argon2id } from 'oslo/password';
-
 import { route } from '$lib/ROUTES';
 import {
 	PENDING_USER_VERIFICATION_COOKIE_NAME,
@@ -13,28 +11,23 @@ import {
 	generateEmailVerificationCode,
 	insertNewUser,
 	sendEmailVerificationCode
-} from '$lib/database/authUtils.server';
-import { database } from '$lib/database/database.server';
-import { usersTable } from '$lib/database/schema';
+} from '$lib/server/authUtils.server';
+import { prisma } from '$lib/server/database.server';
 import type { AlertMessageType } from '$lib/types';
 import { logError } from '$lib/utils';
 import { RegisterUserZodSchema } from '$validations/authSchemas';
-import { eq } from 'drizzle-orm';
 
-export const load = (async () => {
+export const load: PageServerLoad = async({ request }) => {
 	return {
-		registerUserFormData: await superValidate(RegisterUserZodSchema)
+		registerUserFormData: await superValidate(request, zod(RegisterUserZodSchema))
 	};
-}) satisfies PageServerLoad;
+}
 
 export const actions: Actions = {
 	registerUser: async ({ request, cookies }) => {
-		const registerUserFormData = await superValidate<
-			typeof RegisterUserZodSchema,
-			AlertMessageType
-		>(request, RegisterUserZodSchema);
+		const registerUserFormData = await superValidate(request, zod(RegisterUserZodSchema));
 
-		if (registerUserFormData.valid === false) {
+		if (!registerUserFormData.valid) {
 			return message(registerUserFormData, {
 				alertType: 'error',
 				alertText: 'Please check your entries, the form contains invalid data'
@@ -46,7 +39,7 @@ export const actions: Actions = {
 			const existingUser = await checkIfUserExists(userEmail);
 
 			// If there is a user and they're using email auth, we don't want to create a new user
-			if (existingUser && existingUser.authMethods.includes('email')) {
+			if (existingUser?.authMethods.includes('email')) {
 				return message(registerUserFormData, {
 					alertType: 'error',
 					alertText: 'This email is already in use. Please use a different email address.'
@@ -59,7 +52,7 @@ export const actions: Actions = {
 			// if theres no user with the email, create a new user
 			if (!existingUser) {
 				await insertNewUser({
-					id: userId,
+					sub: userId,
 					name: registerUserFormData.data.name,
 					email: userEmail,
 					isEmailVerified: false,
@@ -67,7 +60,7 @@ export const actions: Actions = {
 					authMethods: ['email']
 				});
 			} else {
-				await database
+				await prisma
 					.update(usersTable)
 					.set({
 						password: hashedPassword

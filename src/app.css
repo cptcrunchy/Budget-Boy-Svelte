@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --theme-green: #01BF62;
+    --theme-gray: #4E4C4C;
+    --theme-red: rgb(236, 90, 90);
+  }
+}

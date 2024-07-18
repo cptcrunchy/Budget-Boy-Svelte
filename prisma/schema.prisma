@@ -53,3 +53,11 @@ model Session {
   xata_version   Int      @default(0)
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model EmailVerificationCode {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  code      String
+  email     String
+  expiresAt DateTime
+}
