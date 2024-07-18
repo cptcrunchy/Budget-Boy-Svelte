@@ -8,4 +8,10 @@
     --theme-gray: #4E4C4C;
     --theme-red: rgb(236, 90, 90);
   }
+  .theme-green {
+    color: var(--theme-green);
+  }
+  .bg-action {
+    box-shadow: 10px 10px var(--theme-gray);
+  }
 }

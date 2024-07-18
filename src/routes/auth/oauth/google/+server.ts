@@ -7,8 +7,8 @@ import { generateCodeVerifier, generateState } from 'arctic';
 import {
 	GOOGLE_OAUTH_CODE_VERIFIER_COOKIE_NAME,
 	GOOGLE_OAUTH_STATE_COOKIE_NAME
-} from '$lib/database/authUtils.server';
-import { googleOauth } from '$lib/database/luciaAuth.server';
+} from '$lib/server/authUtils.server';
+import { googleOauth } from '$lib/server/luciaAuth.server';
 
 export const GET: RequestHandler = async ({ cookies }) => {
 	// Generate a unique state value for the OAuth  process

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PageData } from "./$types";
   import toast from "svelte-french-toast";
-  import { superForm } from "sveltekit-superforms/client";
+  import { superForm } from "sveltekit-superforms";
   import { zodClient } from "sveltekit-superforms/adapters";
   import { route } from "$lib/ROUTES";
   import {
@@ -42,14 +42,20 @@
   );
 </script>
 
-<div class="w-full flex justify-center">
-  <div class="register">
-    <h2 class="register-title">Register</h2>
-    <div class="card-body items-center text-center">
+<div class="w-full flex flex-col items-center">
+  <div class="card w-96 relative mt-14">
+    <h2
+      class="-top-[52px] tracking-[-3px] text-[50px] uppercase font-bold absolute left-[20px] text-[--theme-green]"
+    >
+      Register
+    </h2>
+    <div
+      class="card-body p-6 items-center text-center bg-action bg-[--theme-green] rounded-xl border-none z-10"
+    >
       <form
         method="post"
         use:enhance
-        class="gap-y-4 w-full"
+        class="gap-y-4 w-full bg-[--theme-green]"
         action={route("registerUser /auth/register")}
       >
         <FormField
@@ -58,7 +64,7 @@
           placeholder="Username"
           bind:value={$form.name}
           errorMessage={$errors.name}
-          labelName="Username"
+          label="Username"
         />
         <FormField
           icon="ph:envelope"
@@ -66,14 +72,14 @@
           placeholder="Email"
           bind:value={$form.email}
           errorMessage={$errors.email}
-          labelName="Email"
+          label="Email"
         />
         <FormField
           icon="ph:key"
           type="password"
           bind:value={$form.password}
           errorMessage={$errors.password}
-          labelName="Password"
+          label="Password"
         />
         <button type="submit" class="btn bg-white w-full mt-4">
           Register
@@ -83,15 +89,9 @@
       <OAuthButtonLinks />
     </div>
   </div>
+  <p class="mt-5 font-bold text-sm tracking-wide">
+    Already have an account? <a href="/auth/login" class="text-[--theme-green]"
+      >Log in</a
+    >!
+  </p>
 </div>
-
-<style lang="postcss">
-  .register {
-    @apply card w-96 relative mt-14;
-    background-color: var(--theme-green);
-  }
-  .register-title {
-    @apply -top-[52px] tracking-[-3px] text-[50px] uppercase font-bold absolute left-[20px];
-    color: var(--theme-green);
-  }
-</style>

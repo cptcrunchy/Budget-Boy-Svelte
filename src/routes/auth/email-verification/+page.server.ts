@@ -2,7 +2,7 @@ import { fail, redirect, type Actions, type Cookies } from '@sveltejs/kit';
 
 import type { PageServerLoad } from './$types';
 
-import { message, superValidate } from 'sveltekit-superforms/client';
+import { message, superValidate } from 'sveltekit-superforms';
 
 import { route } from '$lib/ROUTES';
 import {
@@ -14,10 +14,10 @@ import {
 	verifyCodeRateLimiter,
 	verifyEmailVerificationCode,
 	type PendingVerificationUserDataType
-} from '$lib/database/authUtils.server';
-import { database } from '$lib/database/database.server';
-import { lucia } from '$lib/database/luciaAuth.server';
-import { usersTable } from '$lib/database/schema';
+} from '$lib/server/authUtils.server';
+import { prisma } from '$lib/server/database.server';
+import { lucia } from '$lib/server/luciaAuth.server';
+import { usersTable } from '$lib/validations/authSchemas';
 import type { AlertMessageType } from '$lib/types';
 import { DASHBOARD_ROUTE } from '$lib/utils/navLinks';
 import { EmailVerificationCodeZodSchema } from '$validations/authSchemas';

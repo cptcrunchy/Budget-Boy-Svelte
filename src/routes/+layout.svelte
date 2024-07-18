@@ -37,4 +37,18 @@
   <main class="container flex-1 p-2 pb-10">
     <slot />
   </main>
+  <div class="absolute opacity-20 -z-10">
+    <div class="brick-green"></div>
+    <div class="brick-black"></div>
+  </div>
 </div>
+
+<style lang="postcss">
+  .brick-green {
+    @apply fixed h-80 w-32 bottom-0 right-0;
+    background-color: var(--theme-green);
+  }
+  .brick-black {
+    @apply fixed h-52 w-32 bottom-0 right-28 bg-gray-600;
+  }
+</style>

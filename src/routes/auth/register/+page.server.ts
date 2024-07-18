@@ -13,7 +13,6 @@ import {
 	sendEmailVerificationCode
 } from '$lib/server/authUtils.server';
 import { prisma } from '$lib/server/database.server';
-import type { AlertMessageType } from '$lib/types';
 import { logError } from '$lib/utils';
 import { RegisterUserZodSchema } from '$validations/authSchemas';
 

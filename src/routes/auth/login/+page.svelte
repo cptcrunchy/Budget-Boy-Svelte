@@ -2,19 +2,19 @@
   import type { PageData } from "./$types";
 
   import toast from "svelte-french-toast";
-  import { superForm } from "sveltekit-superforms/client";
+  import { superForm } from "sveltekit-superforms";
+  import { zodClient } from "sveltekit-superforms/adapters";
 
   import { route } from "$lib/ROUTES";
   import {
     MAX_EMAIL_LENGTH,
-    MAX_PASSWORD_LENGTH,
     UserLoginZodSchema,
     passwordResetEmailZodSchema,
   } from "$validations/authSchemas";
 
   import OAuthButtonLinks from "$components/OAuthButtonLinks.svelte";
   import OrContinueWithDivider from "$components/OrContinueWithDivider.svelte";
-  import InputField from "$components/form/InputField.svelte";
+  import FormField from "$components/form/FormField.svelte";
 
   export let data: PageData;
 
@@ -28,7 +28,7 @@
   } = superForm(data.userLoginFormData, {
     resetForm: true,
     taintedMessage: null,
-    validators: UserLoginZodSchema,
+    validators: zodClient(UserLoginZodSchema),
 
     onUpdated: () => {
       if (!$loginMessage) return;
@@ -51,7 +51,7 @@
   } = superForm(data.passwordResetEmailFormData, {
     resetForm: true,
     taintedMessage: null,
-    validators: passwordResetEmailZodSchema,
+    validators: zodClient(passwordResetEmailZodSchema),
 
     onUpdated: () => {
       if (!$resetMessage) return;
@@ -69,73 +69,84 @@
   });
 </script>
 
-<h1 class="mb-6 text-2xl font-bold leading-none">Login</h1>
-
-<form
-  method="post"
-  use:loginEnhance
-  action={route("logInUser /auth/login")}
-  class="space-y-4"
->
-  <InputField
-    type="email"
-    name="email"
-    label="Email"
-    bind:value={$loginForm.email}
-    errorMessage={$loginErrors.email}
-    maxlength={MAX_EMAIL_LENGTH}
-  />
-
-  <InputField
-    type="password"
-    name="password"
-    label="Password"
-    bind:value={$loginForm.password}
-    errorMessage={$loginErrors.password}
-    maxlength={MAX_PASSWORD_LENGTH}
-  />
-
-  <div class="flex flex-wrap justify-between gap-4">
-    <button
-      type="submit"
-      disabled={$loginDelayed}
-      class="flex-grow btn btn-primary">Sign in with email</button
+<div class="w-full flex flex-col items-center">
+  <div class="card w-96 relative mt-14">
+    <h2
+      class="-top-[52px] tracking-[-3px] text-[50px] uppercase font-bold absolute left-[20px] text-[--theme-green]"
     >
+      Login
+    </h2>
+    <div
+      class="card-body p-6 items-center text-center bg-action bg-[--theme-green] rounded-xl border-none z-10"
+    >
+      <form
+        method="post"
+        use:loginEnhance
+        action={route("logInUser /auth/login")}
+        class="flex flex-col gap-y-4 w-full bg-[--theme-green]"
+      >
+        <FormField
+          type="email"
+          name="email"
+          icon="ph:envelope"
+          label="Email"
+          bind:value={$loginForm.email}
+          errorMessage={$loginErrors.email}
+        />
 
-    <dialog class="modal" id="forgotpassword_modal">
-      <p>Forgot Password?</p>
-      <div>
-        <header>
-          <h3>Password Reset</h3>
-          <p>
-            Enter your email address and we'll send you a link to reset your
-            password.
-          </p>
-        </header>
+        <FormField
+          type="password"
+          name="password"
+          icon="ph:key"
+          label="Password"
+          bind:value={$loginForm.password}
+          errorMessage={$loginErrors.password}
+        />
 
-        <form
-          method="post"
-          use:resetEnhance
-          action={route("sendPasswordResetEmail /auth/login")}
-          class="space-y-4"
-        >
-          <InputField
-            type="email"
-            name="email"
-            label="Email"
-            bind:value={$resetForm.email}
-            errorMessage={$resetErrors.email}
-            maxlength={MAX_EMAIL_LENGTH}
-          />
-
-          <button type="submit" disabled={$resetDelayed}>Send Reset Link</button
+        <div class="flex flex-wrap justify-between gap-4">
+          <button
+            type="submit"
+            disabled={$loginDelayed}
+            class="btn bg-white w-full mt-4">Sign in with email</button
           >
-        </form>
-      </div>
-    </dialog>
+
+          <dialog class="" id="forgotpassword_modal">
+            <p>Forgot Password?</p>
+            <div>
+              <header>
+                <h3>Password Reset</h3>
+                <p>
+                  Enter your email address and we'll send you a link to reset
+                  your password.
+                </p>
+              </header>
+
+              <form
+                method="post"
+                use:resetEnhance
+                action={route("sendPasswordResetEmail /auth/login")}
+                class="gap-y-4 w-full bg-[--theme-green]"
+              >
+                <FormField
+                  type="email"
+                  name="email"
+                  icon="ph:envelope"
+                  label="Email"
+                  bind:value={$resetForm.email}
+                  errorMessage={$resetErrors.email}
+                  maxlength={MAX_EMAIL_LENGTH}
+                />
+
+                <button type="submit" disabled={$resetDelayed}
+                  >Send Reset Link</button
+                >
+              </form>
+            </div>
+          </dialog>
+        </div>
+      </form>
+      <OrContinueWithDivider />
+      <OAuthButtonLinks />
+    </div>
   </div>
-</form>
-
-<OrContinueWithDivider />
-
-<OAuthButtonLinks />
+</div>

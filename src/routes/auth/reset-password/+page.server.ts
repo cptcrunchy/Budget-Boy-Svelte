@@ -3,8 +3,8 @@ import type { Actions, PageServerLoad } from './$types';
 
 import { redirect } from 'sveltekit-flash-message/server';
 import { message, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 
-import { eq } from 'drizzle-orm';
 import { Argon2id } from 'oslo/password';
 
 import {
@@ -12,11 +12,9 @@ import {
 	isSameAsOldPassword,
 	passwordResetPageActionRateLimiter,
 	verifyPasswordResetToken
-} from '$lib/database/authUtils.server';
-import { database } from '$lib/database/database.server';
-import { lucia } from '$lib/database/luciaAuth.server';
-import { passwordResetTokensTable, usersTable } from '$lib/database/schema';
-import type { AlertMessageType } from '$lib/types';
+} from '$lib/server/authUtils.server';
+import { prisma } from '$lib/server/database.server';
+import { lucia } from '$lib/server/luciaAuth.server';
 import { DASHBOARD_ROUTE } from '$lib/utils/navLinks';
 import { PasswordResetZodSchema } from '$validations/authSchemas';
 
@@ -37,16 +35,13 @@ export const load = (async (event) => {
 			message
 		},
 
-		passwordResetFormData: await superValidate(PasswordResetZodSchema)
+		passwordResetFormData: await superValidate(zod(PasswordResetZodSchema))
 	};
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
 	resetPassword: async (event) => {
-		const passwordResetFormData = await superValidate<
-			typeof PasswordResetZodSchema,
-			AlertMessageType
-		>(event.request, PasswordResetZodSchema);
+		const passwordResetFormData = await superValidate(event.request,zod(PasswordResetZodSchema));
 
 		if (passwordResetFormData.valid === false) {
 			return message(passwordResetFormData, {
@@ -131,7 +126,7 @@ export const actions: Actions = {
 				// Invalidate all user sessions before updating the password for security reasons
 				await lucia.invalidateUserSessions(userId);
 
-				await database.transaction(async (trx) => {
+				await prisma.transaction(async (trx) => {
 					// Delete the password reset token from the database
 					await trx
 						.delete(passwordResetTokensTable)

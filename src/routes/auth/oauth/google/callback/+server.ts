@@ -9,10 +9,10 @@ import {
 	GOOGLE_OAUTH_CODE_VERIFIER_COOKIE_NAME,
 	GOOGLE_OAUTH_STATE_COOKIE_NAME,
 	createAndSetSession
-} from '$lib/database/authUtils.server';
-import { database } from '$lib/database/database.server';
-import { googleOauth, lucia } from '$lib/database/luciaAuth.server';
-import { oauthAccountsTable, usersTable } from '$lib/database/schema';
+} from '$lib/server/authUtils.server';
+import { prisma } from '$lib/server/database.server';
+import { googleOauth, lucia } from '$lib/server/luciaAuth.server';
+import { oauthAccountsTable, usersTable } from '$lib/validations/authSchemas';
 
 
 

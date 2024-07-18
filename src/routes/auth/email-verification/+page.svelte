@@ -3,7 +3,7 @@
   import type { PageData } from "./$types";
 
   import toast from "svelte-french-toast";
-  import { superForm } from "sveltekit-superforms/client";
+  import { superForm } from "sveltekit-superforms";
 
   import { route } from "$lib/ROUTES";
   import { EmailVerificationCodeZodSchema } from "$validations/authSchemas";

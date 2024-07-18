@@ -8,10 +8,10 @@ import { route } from '$lib/ROUTES';
 import {
 	GITHUB_OAUTH_STATE_COOKIE_NAME,
 	createAndSetSession
-} from '$lib/database/authUtils.server';
-import { database } from '$lib/database/database.server';
-import { githubOauth, lucia } from '$lib/database/luciaAuth.server';
-import { oauthAccountsTable, usersTable } from '$lib/database/schema';
+} from '$lib/server/authUtils.server';
+import { prisma } from '$lib/server/database.server';
+import { githubOauth, lucia } from '$lib/server/luciaAuth.server';
+import { oauthAccountsTable, usersTable } from '$lib/validations/authSchemas';
 
 type GitHubUser = {
 	id: number;

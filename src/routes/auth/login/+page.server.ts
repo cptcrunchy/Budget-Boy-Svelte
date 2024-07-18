@@ -5,6 +5,7 @@ import { redirect as flashMessageRedirect } from 'sveltekit-flash-message/server
 
 import { Argon2id } from 'oslo/password';
 import { message, setError, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 
 import { route } from '$lib/ROUTES';
 import {
@@ -13,9 +14,8 @@ import {
 	createPasswordResetToken,
 	passwordResetEmailRateLimiter,
 	sendPasswordResetEmail
-} from '$lib/database/authUtils.server';
-import { lucia } from '$lib/database/luciaAuth.server';
-import type { AlertMessageType } from '$lib/types';
+} from '$lib/server/authUtils.server';
+import { lucia } from '$lib/server/luciaAuth.server';
 import { DASHBOARD_ROUTE } from '$lib/utils/navLinks';
 import { UserLoginZodSchema, passwordResetEmailZodSchema } from '$validations/authSchemas';
 
@@ -26,17 +26,14 @@ export const load = (async (event) => {
 	await passwordResetEmailRateLimiter.cookieLimiter?.preflight(event);
 
 	return {
-		userLoginFormData: await superValidate(UserLoginZodSchema),
-		passwordResetEmailFormData: await superValidate(passwordResetEmailZodSchema)
+		userLoginFormData: await superValidate(zod(UserLoginZodSchema)),
+		passwordResetEmailFormData: await superValidate(zod(passwordResetEmailZodSchema))
 	};
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
 	logInUser: async ({ request, cookies }) => {
-		const userLoginFormData = await superValidate<typeof UserLoginZodSchema, AlertMessageType>(
-			request,
-			UserLoginZodSchema
-		);
+		const userLoginFormData = await superValidate(request, zod(UserLoginZodSchema));
 
 		if (userLoginFormData.valid === false) {
 			return message(userLoginFormData, {
@@ -96,10 +93,7 @@ export const actions: Actions = {
 	},
 
 	sendPasswordResetEmail: async (event) => {
-		const passwordResetEmailFormData = await superValidate<
-			typeof passwordResetEmailZodSchema,
-			AlertMessageType
-		>(event.request, passwordResetEmailZodSchema);
+		const passwordResetEmailFormData = await superValidate(event.request, zod(passwordResetEmailZodSchema));
 
 		try {
 			if (passwordResetEmailFormData.valid === false) {
