@@ -15,6 +15,7 @@
   import InputField from "$components/form/InputField.svelte";
   import OAuthButtonLinks from "$components/OAuthButtonLinks.svelte";
   import Icon from "@iconify/svelte";
+  import { assets } from "$app/paths";
 
   export let data: PageData;
 
@@ -95,3 +96,8 @@
     >!
   </p>
 </div>
+<img
+  class="absolute left-0 bottom-0 z-10 opacity-30 hidden lg:block"
+  src="/assets/girl-computer.webp"
+  alt="girl on a computer"
+/>

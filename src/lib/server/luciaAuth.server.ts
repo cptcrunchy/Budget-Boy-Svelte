@@ -8,6 +8,7 @@ import {
 import { GitHub, Google } from "arctic";
 import { PrismaAdapter } from '@lucia-auth/adapter-prisma';
 import { Lucia } from 'lucia';
+import { route } from "$lib/ROUTES";
 
 import { prisma } from './database.server';
 
@@ -16,7 +17,7 @@ const dbAdapter = new PrismaAdapter(prisma.session, prisma.user);
 export const googleOauth = new Google(
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
-  dev ? "http://localhost:5173/login/google/callback" : ""
+  route('GET /auth/oauth/google/callback')
 );
 
 export const githubOauth = new GitHub(

@@ -1,7 +1,6 @@
 import type { RequestHandler } from './$types';
 
 import { OAuth2RequestError } from 'arctic';
-import { and, eq } from 'drizzle-orm';
 import { generateId } from 'lucia';
 
 import { route } from '$lib/ROUTES';
@@ -9,9 +8,8 @@ import {
 	GITHUB_OAUTH_STATE_COOKIE_NAME,
 	createAndSetSession
 } from '$lib/server/authUtils.server';
-import { prisma } from '$lib/server/database.server';
+import { prisma } from '$lib/server/prisma.server';
 import { githubOauth, lucia } from '$lib/server/luciaAuth.server';
-import { oauthAccountsTable, usersTable } from '$lib/validations/authSchemas';
 
 type GitHubUser = {
 	id: number;
@@ -74,14 +72,14 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		// Check if the user already exists
-		const [existingUser] = await database
+		const [existingUser] = await prisma
 			.select()
 			.from(usersTable)
 			.where(eq(usersTable.email, primaryEmail.email));
 
 		if (existingUser) {
 			// Check if the user already has a GitHub OAuth account linked
-			const [existingOauthAccount] = await database
+			const [existingOauthAccount] = await prisma
 				.select()
 				.from(oauthAccountsTable)
 				.where(
@@ -96,7 +94,7 @@ export const GET: RequestHandler = async (event) => {
 				const authMethods = existingUser.authMethods || [];
 				authMethods.push('github');
 
-				await database.transaction(async (trx) => {
+				await prisma.transaction(async (trx) => {
 					// Link the GitHub OAuth account to the existing user
 					await trx.insert(oauthAccountsTable).values({
 						userId: existingUser.id,
@@ -119,7 +117,7 @@ export const GET: RequestHandler = async (event) => {
 			// Create a new user and link the GitHub OAuth account
 			const userId = generateId(15);
 
-			await database.transaction(async (trx) => {
+			await prisma.transaction(async (trx) => {
 				await trx.insert(usersTable).values({
 					id: userId,
 					name: githubUser.name,
