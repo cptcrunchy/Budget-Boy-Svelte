@@ -1,8 +1,9 @@
 import { fail, redirect, type Actions, type Cookies } from '@sveltejs/kit';
-
+import { StatusCodes as HTTP } from 'http-status-codes';
 import type { PageServerLoad } from './$types';
 
 import { message, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 
 import { route } from '$lib/ROUTES';
 import {
@@ -12,13 +13,10 @@ import {
 	sendCodeRateLimiter,
 	sendEmailVerificationCode,
 	verifyCodeRateLimiter,
-	verifyEmailVerificationCode,
-	type PendingVerificationUserDataType
+	verifyEmailVerificationCode
 } from '$lib/server/authUtils.server';
 import { prisma } from '$lib/server/database.server';
 import { lucia } from '$lib/server/luciaAuth.server';
-import { usersTable } from '$lib/validations/authSchemas';
-import type { AlertMessageType } from '$lib/types';
 import { DASHBOARD_ROUTE } from '$lib/utils/navLinks';
 import { EmailVerificationCodeZodSchema } from '$validations/authSchemas';
 
@@ -29,7 +27,7 @@ const getUserDataFromCookie = (cookies: Cookies) => {
 
 	if (!cookieData) return null;
 
-	return JSON.parse(cookieData) as PendingVerificationUserDataType;
+	return JSON.parse(cookieData);
 };
 
 export const load = (async (event) => {
@@ -40,12 +38,12 @@ export const load = (async (event) => {
 	const userData = getUserDataFromCookie(event.cookies);
 
 	if (!userData) {
-		return redirect(303, route('/auth/register'));
+		return redirect(HTTP.SEE_OTHER, route('/auth/register'));
 	}
 
 	return {
 		pendingUserEmail: userData.email,
-		emailVerificationCodeFormData: await superValidate(EmailVerificationCodeZodSchema)
+		emailVerificationCodeFormData: await superValidate(zod(EmailVerificationCodeZodSchema))
 	};
 }) satisfies PageServerLoad;
 
@@ -55,12 +53,9 @@ export const actions: Actions = {
 
 		const userData = getUserDataFromCookie(cookies);
 
-		if (!userData) return redirect(303, route('/auth/register'));
+		if (!userData) return redirect(HTTP.SEE_OTHER, route('/auth/register'));
 
-		const emailVerificationCodeFormData = await superValidate<
-			typeof EmailVerificationCodeZodSchema,
-			AlertMessageType
-		>(request, EmailVerificationCodeZodSchema);
+		const emailVerificationCodeFormData = await superValidate(request, zod(EmailVerificationCodeZodSchema));
 
 		if (emailVerificationCodeFormData.valid === false) {
 			return message(emailVerificationCodeFormData, {
@@ -96,7 +91,7 @@ export const actions: Actions = {
 			});
 		}
 
-		await database.transaction(async (trx) => {
+		await prismatransaction(async (trx) => {
 			const [existingUser] = await trx
 				.select()
 				.from(usersTable)
@@ -117,7 +112,7 @@ export const actions: Actions = {
 			path: route('/auth/email-verification')
 		});
 
-		throw redirect(303, DASHBOARD_ROUTE);
+		throw redirect(HTTP.SEE_OTHER, DASHBOARD_ROUTE);
 	},
 
 	sendNewCode: async (event) => {
@@ -131,7 +126,7 @@ export const actions: Actions = {
 
 		const userData = getUserDataFromCookie(event.cookies);
 
-		if (!userData) return redirect(303, route('/auth/register'));
+		if (!userData) return redirect(HTTP.SEE_OTHER, route('/auth/register'));
 
 		const emailVerificationCode = await generateEmailVerificationCode(userData.id, userData.email);
 

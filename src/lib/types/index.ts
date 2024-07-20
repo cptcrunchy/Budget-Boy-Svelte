@@ -32,6 +32,16 @@ export type GoogleUser = {
 	locale: string;
 };
 
+export type RegistrationUser = {
+  sub: string;
+	name: string;
+	picture?: string;
+	email: string;
+  password: string;
+	isEmailVerified: boolean;
+}
+
+
 export type PendingVerificationUserDataType = {
 	id: string;
 	email: string;

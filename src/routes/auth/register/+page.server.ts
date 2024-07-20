@@ -1,4 +1,5 @@
 import { redirect } from '@sveltejs/kit';
+import { StatusCodes as HTTP } from 'http-status-codes'
 import type { Actions, PageServerLoad } from './$types';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -24,47 +25,50 @@ export const load: PageServerLoad = async({ request }) => {
 
 export const actions: Actions = {
 	registerUser: async ({ request, cookies }) => {
-		const registerUserFormData = await superValidate(request, zod(RegisterUserZodSchema));
+		const registerUserForm = await superValidate(request, zod(RegisterUserZodSchema));
 
-		if (!registerUserFormData.valid) {
-			return message(registerUserFormData, {
+		if (!registerUserForm.valid) {
+			return message(registerUserForm, {
 				alertType: 'error',
 				alertText: 'Please check your entries, the form contains invalid data'
 			});
 		}
 
 		try {
-			const userEmail = registerUserFormData.data.email;
+			const userEmail = registerUserForm.data.email;
 			const existingUser = await checkIfUserExists(userEmail);
 
 			// If there is a user and they're using email auth, we don't want to create a new user
 			if (existingUser?.authMethods.includes('email')) {
-				return message(registerUserFormData, {
+				return message(registerUserForm, {
 					alertType: 'error',
 					alertText: 'This email is already in use. Please use a different email address.'
 				});
 			}
 
 			const userId = existingUser?.id ?? generateId(15);
-			const hashedPassword = await new Argon2id().hash(registerUserFormData.data.password);
+			const hashedPassword = await new Argon2id().hash(registerUserForm.data.password);
 
 			// if theres no user with the email, create a new user
 			if (!existingUser) {
 				await insertNewUser({
 					sub: userId,
-					name: registerUserFormData.data.name,
+					name: registerUserForm.data.name,
 					email: userEmail,
 					isEmailVerified: false,
-					password: hashedPassword,
-					authMethods: ['email']
+					password: hashedPassword
 				});
 			} else {
 				await prisma
-					.update(usersTable)
-					.set({
-						password: hashedPassword
-					})
-					.where(eq(usersTable.email, userEmail));
+          .user
+					.update({
+            where: {
+              email: userEmail
+            },
+            data: {
+              password: hashedPassword
+            }
+          });
 			}
 
 			const emailVerificationCode = await generateEmailVerificationCode(userId, userEmail);
@@ -75,7 +79,7 @@ export const actions: Actions = {
 			);
 
 			if (!sendEmailVerificationCodeResult.success) {
-				return message(registerUserFormData, {
+				return message(registerUserForm, {
 					alertType: 'error',
 					alertText: sendEmailVerificationCodeResult.message
 				});
@@ -89,12 +93,12 @@ export const actions: Actions = {
 		} catch (error) {
 			logError(error);
 
-			return message(registerUserFormData, {
+			return message(registerUserForm, {
 				alertType: 'error',
 				alertText: 'An error occurred while processing your request. Please try again.'
 			});
 		}
 
-		throw redirect(303, route('/auth/email-verification'));
+		throw redirect(HTTP.SEE_OTHER, route('/auth/email-verification'));
 	}
 };

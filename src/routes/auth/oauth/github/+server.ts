@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-
+import { StatusCodes as HTTP } from 'http-status-codes';
 import { generateState } from 'arctic';
 
 import { GITHUB_OAUTH_STATE_COOKIE_NAME } from '$lib/server/authUtils.server';
@@ -25,5 +25,5 @@ export const GET: RequestHandler = async ({ cookies }) => {
 	});
 
 	// Redirect the user to the GitHub OAuth authorization URL
-	redirect(302, url);
+	redirect(HTTP.MOVED_TEMPORARILY, url);
 };

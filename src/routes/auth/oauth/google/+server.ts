@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { dev } from '$app/environment';
 import { generateCodeVerifier, generateState } from 'arctic';
-
+import { StatusCodes as HTTP } from 'http-status-codes';
 import {
 	GOOGLE_OAUTH_CODE_VERIFIER_COOKIE_NAME,
 	GOOGLE_OAUTH_STATE_COOKIE_NAME
@@ -39,5 +39,5 @@ export const GET: RequestHandler = async ({ cookies }) => {
 	});
 
 	// Redirect the user to the GitHub OAuth authorization URL
-	redirect(302, url);
+	redirect(HTTP.MOVED_TEMPORARILY, url);
 };

@@ -11,7 +11,7 @@ import { RetryAfterRateLimiter } from 'sveltekit-rate-limiter/server';
 import { route } from '$lib/ROUTES';
 import { EMAIL_VERIFICATION_CODE_LENGTH } from '$validations/authSchemas';
 import { prisma } from './database.server';
-import type { EmailParams, GoogleUser } from '$lib/types';
+import type { EmailParams, GoogleUser, RegistrationUser } from '$lib/types';
 
 const resend = new Resend(RESEND_API_KEY);
 
@@ -119,16 +119,17 @@ export const updateUserOAuth = async (user: GoogleUser) => {
   });
 };
 
-export const insertNewUser = async (user: GoogleUser) => {
+export const insertNewUser = async (user: RegistrationUser) => {
 	return await prisma.user.create({
     data: {
+      id: user.sub,
       name: user.name,
       email: user.email,
       picture: user.picture,
-      oAuthAccounts: {
+      passwords: {
         create: {
-          providerId: "google",
-          providerUserId: user.sub,
+          userId: user.sub,
+          hashedPassword: user.password,
         }
       }
     }

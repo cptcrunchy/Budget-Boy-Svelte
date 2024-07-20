@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-
+import { StatusCodes as HTTP } from 'http-status-codes';
 import { redirect as flashMessageRedirect } from 'sveltekit-flash-message/server';
 
 import { Argon2id } from 'oslo/password';
@@ -89,7 +89,7 @@ export const actions: Actions = {
 
 		await createAndSetSession(lucia, existingUser.id, cookies);
 
-		throw redirect(303, DASHBOARD_ROUTE);
+		throw redirect(HTTP.SEE_OTHER, DASHBOARD_ROUTE);
 	},
 
 	sendPasswordResetEmail: async (event) => {
