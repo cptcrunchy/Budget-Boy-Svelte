@@ -1,29 +1,17 @@
 import type { RequestHandler } from './$types';
-
 import { OAuth2RequestError } from 'arctic';
-import { generateId } from 'lucia';
-
 import { route } from '$lib/ROUTES';
 import {
 	GITHUB_OAUTH_STATE_COOKIE_NAME,
-	createAndSetSession
+	checkIfUserExists,
+	createAndSetSession,
+  getIfOAuthExits,
+  insertNewOAuthUser,
+  updateUserOAuth
 } from '$lib/server/authUtils.server';
-import { prisma } from '$lib/server/prisma.server';
 import { githubOauth, lucia } from '$lib/server/luciaAuth.server';
+import type { GitHubEmail, OAuthUser } from '$lib/types';
 
-type GitHubUser = {
-	id: number;
-	login: string;
-	avatar_url: string;
-	name: string;
-};
-
-type GitHubEmail = {
-	email: string;
-	primary: boolean;
-	verified: boolean;
-	visibility: string | null;
-};
 
 export const GET: RequestHandler = async (event) => {
 	const code = event.url.searchParams.get('code');
@@ -54,7 +42,7 @@ export const GET: RequestHandler = async (event) => {
 			}
 		});
 
-		const githubUser = (await githubUserResponse.json()) as GitHubUser;
+		const githubUser = (await githubUserResponse.json()) as OAuthUser;
 		const githubEmail = (await githubEmailResponse.json()) as GitHubEmail[];
 
 		const primaryEmail = githubEmail.find((email) => email.primary) ?? null;
@@ -72,69 +60,20 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		// Check if the user already exists
-		const [existingUser] = await prisma
-			.select()
-			.from(usersTable)
-			.where(eq(usersTable.email, primaryEmail.email));
-
+    const existingUser = await checkIfUserExists(primaryEmail.email);
 		if (existingUser) {
 			// Check if the user already has a GitHub OAuth account linked
-			const [existingOauthAccount] = await prisma
-				.select()
-				.from(oauthAccountsTable)
-				.where(
-					and(
-						eq(oauthAccountsTable.providerId, 'github'),
-						eq(oauthAccountsTable.providerUserId, githubUser.id.toString())
-					)
-				);
+      const existingOauthAccount = await getIfOAuthExits("github", existingUser);
 
 			if (!existingOauthAccount) {
 				// Add the 'github' auth provider to the user's authMethods list
-				const authMethods = existingUser.authMethods || [];
-				authMethods.push('github');
-
-				await prisma.transaction(async (trx) => {
-					// Link the GitHub OAuth account to the existing user
-					await trx.insert(oauthAccountsTable).values({
-						userId: existingUser.id,
-						providerId: 'github',
-						providerUserId: githubUser.id.toString()
-					});
-
-					// Update the user's authMethods list
-					await trx
-						.update(usersTable)
-						.set({
-							authMethods
-						})
-						.where(eq(usersTable.id, existingUser.id));
-				});
+        await updateUserOAuth(existingUser, "github");
 			}
-
 			await createAndSetSession(lucia, existingUser.id, event.cookies);
 		} else {
 			// Create a new user and link the GitHub OAuth account
-			const userId = generateId(15);
-
-			await prisma.transaction(async (trx) => {
-				await trx.insert(usersTable).values({
-					id: userId,
-					name: githubUser.name,
-					avatarUrl: githubUser.avatar_url,
-					email: primaryEmail.email,
-					isEmailVerified: true,
-					authMethods: ['github']
-				});
-
-				await trx.insert(oauthAccountsTable).values({
-					userId,
-					providerId: 'github',
-					providerUserId: githubUser.id.toString()
-				});
-			});
-
-			await createAndSetSession(lucia, userId, event.cookies);
+			const newUser = await insertNewOAuthUser(githubUser, "google");
+			await createAndSetSession(lucia, newUser.id, event.cookies);
 		}
 
 		return new Response(null, {

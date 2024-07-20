@@ -10,7 +10,7 @@ import {
 	PENDING_USER_VERIFICATION_COOKIE_NAME,
 	checkIfUserExists,
 	generateEmailVerificationCode,
-	insertNewUser,
+	insertNewEmailUser,
 	sendEmailVerificationCode
 } from '$lib/server/authUtils.server';
 import { prisma } from '$lib/server/database.server';
@@ -51,11 +51,11 @@ export const actions: Actions = {
 
 			// if theres no user with the email, create a new user
 			if (!existingUser) {
-				await insertNewUser({
+				await insertNewEmailUser({
 					sub: userId,
 					name: registerUserForm.data.name,
 					email: userEmail,
-					isEmailVerified: false,
+					email_verified: false,
 					password: hashedPassword
 				});
 			} else {

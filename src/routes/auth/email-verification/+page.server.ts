@@ -8,14 +8,15 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { route } from '$lib/ROUTES';
 import {
 	PENDING_USER_VERIFICATION_COOKIE_NAME,
+	checkIfUserExists,
 	createAndSetSession,
 	generateEmailVerificationCode,
 	sendCodeRateLimiter,
 	sendEmailVerificationCode,
+	updateUserEmail,
 	verifyCodeRateLimiter,
 	verifyEmailVerificationCode
 } from '$lib/server/authUtils.server';
-import { prisma } from '$lib/server/database.server';
 import { lucia } from '$lib/server/luciaAuth.server';
 import { DASHBOARD_ROUTE } from '$lib/utils/navLinks';
 import { EmailVerificationCodeZodSchema } from '$validations/authSchemas';
@@ -91,20 +92,11 @@ export const actions: Actions = {
 			});
 		}
 
-		await prismatransaction(async (trx) => {
-			const [existingUser] = await trx
-				.select()
-				.from(usersTable)
-				.where(eq(usersTable.email, userData.email));
-
-			const authMethods = existingUser?.authMethods ?? [];
-			authMethods.push('email');
-
-			await trx
-				.update(usersTable)
-				.set({ isEmailVerified: true, authMethods })
-				.where(eq(usersTable.email, userData.email));
-		});
+    const existingUser = await checkIfUserExists(userData.email);
+    if (existingUser) {  
+      await updateUserEmail(existingUser);
+    }
+		
 		await createAndSetSession(lucia, userData.id, cookies);
 
 		cookies.set(PENDING_USER_VERIFICATION_COOKIE_NAME, '', {

@@ -1,19 +1,17 @@
 import type { RequestHandler } from './$types';
-
 import { OAuth2RequestError } from 'arctic';
-import { generateId } from 'lucia';
-
 import { route } from '$lib/ROUTES';
 import {
 	GOOGLE_OAUTH_CODE_VERIFIER_COOKIE_NAME,
 	GOOGLE_OAUTH_STATE_COOKIE_NAME,
-	createAndSetSession
+	checkIfUserExists,
+	createAndSetSession,
+  getIfOAuthExits,
+  insertNewOAuthUser,
+  updateUserOAuth
 } from '$lib/server/authUtils.server';
-import { prisma } from '$lib/server/prisma.server';
 import { googleOauth, lucia } from '$lib/server/luciaAuth.server';
-import type { GoogleUser } from '$lib/types';
-
-
+import type { OAuthUser } from '$lib/types';
 
 export const GET: RequestHandler = async (event) => {
 	const code = event.url.searchParams.get('code');
@@ -38,7 +36,7 @@ export const GET: RequestHandler = async (event) => {
 			}
 		});
 
-		const googleUser = (await googleUserResponse.json()) as GoogleUser;
+		const googleUser = (await googleUserResponse.json()) as OAuthUser;
 
 		if (!googleUser.email) {
 			return new Response('No primary email address', {
@@ -53,69 +51,21 @@ export const GET: RequestHandler = async (event) => {
 		}
 
 		// Check if the user already exists
-		const [existingUser] = await prisma
-			.select()
-			.from(usersTable)
-			.where(eq(usersTable.email, googleUser.email));
+		const existingUser = await checkIfUserExists(googleUser.email);
 
 		if (existingUser) {
 			// Check if the user already has a Google OAuth account linked
-			const [existingOauthAccount] = await prisma
-				.select()
-				.from(oauthAccountsTable)
-				.where(
-					and(
-						eq(oauthAccountsTable.providerId, 'google'),
-						eq(oauthAccountsTable.providerUserId, googleUser.sub)
-					)
-				);
+			const existingOauthAccount = await getIfOAuthExits("google", existingUser);
 
 			if (!existingOauthAccount) {
 				// Add the 'google' auth provider to the user's authMethods list
-				const authMethods = existingUser.authMethods || [];
-				authMethods.push('google');
-
-				await prisma.transaction(async (trx) => {
-					// Link the Google OAuth account to the existing user
-					await trx.insert(oauthAccountsTable).values({
-						userId: existingUser.id,
-						providerId: 'google',
-						providerUserId: googleUser.sub
-					});
-
-					// Update the user's authMethods list
-					await trx
-						.update(usersTable)
-						.set({
-							authMethods
-						})
-						.where(eq(usersTable.id, existingUser.id));
-				});
+				await updateUserOAuth(googleUser, "google");
 			}
-
 			await createAndSetSession(lucia, existingUser.id, event.cookies);
 		} else {
 			// Create a new user and their OAuth account
-			const userId = generateId(15);
-
-			await prisma.transaction(async (trx) => {
-				await trx.insert(usersTable).values({
-					id: userId,
-					name: googleUser.name,
-					avatarUrl: googleUser.picture,
-					email: googleUser.email,
-					isEmailVerified: true,
-					authMethods: ['google']
-				});
-
-				await trx.insert(oauthAccountsTable).values({
-					userId,
-					providerId: 'google',
-					providerUserId: googleUser.sub
-				});
-			});
-
-			await createAndSetSession(lucia, userId, event.cookies);
+      const newUser = await insertNewOAuthUser(googleUser, "google");
+			await createAndSetSession(lucia, newUser.id, event.cookies);
 		}
 
 		return new Response(null, {

@@ -48,7 +48,7 @@ declare module 'lucia' {
 		DatabaseUserAttributes: {
 			name: string;
 			email: string;
-      picture: string;
+      avatar_url: string;
 			isEmailVerified: boolean;
 			authMethods: string[];
 			avatarUrl: string;

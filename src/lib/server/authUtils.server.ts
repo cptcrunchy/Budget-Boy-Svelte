@@ -11,7 +11,7 @@ import { RetryAfterRateLimiter } from 'sveltekit-rate-limiter/server';
 import { route } from '$lib/ROUTES';
 import { EMAIL_VERIFICATION_CODE_LENGTH } from '$validations/authSchemas';
 import { prisma } from './database.server';
-import type { EmailParams, GoogleUser, RegistrationUser } from '$lib/types';
+import type { EmailParams, GitHubUser, GoogleUser, OAuthUser, RegistrationUser } from '$lib/types';
 
 const resend = new Resend(RESEND_API_KEY);
 
@@ -104,14 +104,23 @@ export const getIfOAuthExits = async (providerId: string, googleUser: GoogleUser
   });
 }
 
-export const updateUserOAuth = async (user: GoogleUser) => {
+export const updateUserEmail = async(user: RegistrationUser) => {
   await prisma.User.update({
+    where: { email: user.email},
+    data: {
+      isEmailVerified: true
+    }
+  })
+}
+
+export const updateUserOAuth = async (user: OAuthUser, providerId: string) => {
+  return await prisma.User.update({
     where: { email: user.email },
     data: {
       oAuthAccunts: {
         create: {
-          providerId: "google",
-          providerUserId: user.sub,
+          providerId,
+          providerUserId: user.id,
         },
       },
     },
@@ -119,13 +128,13 @@ export const updateUserOAuth = async (user: GoogleUser) => {
   });
 };
 
-export const insertNewUser = async (user: RegistrationUser) => {
-	return await prisma.user.create({
+export const insertNewEmailUser = async (user: RegistrationUser) => {
+  return await prisma.user.create({
     data: {
       id: user.sub,
       name: user.name,
       email: user.email,
-      picture: user.picture,
+      avatar_url: user.avatar_url,
       passwords: {
         create: {
           userId: user.sub,
@@ -135,6 +144,22 @@ export const insertNewUser = async (user: RegistrationUser) => {
     }
   })
 };
+export const insertNewOAuthUser = async(user: GoogleUser | GitHubUser, providerId: string) => {
+  return await prisma.user.create({
+    data: {
+      id: user.sub,
+      name: user.name,
+      email: user.email,
+      avatar_url: user.avatar_url,
+      oAuthAccunts: {
+        create: {
+          providerId,
+          providerUserId: user.sub,
+        },
+      },
+    }
+  })
+}
 
 export const getAllUsers = async () => {
 	const users = await prisma.user.findMany();

@@ -1,11 +1,24 @@
 <script>
-  import { navigating } from "$app/stores";
+  import { navigating, page } from "$app/stores";
   import { onMount } from "svelte";
 
   import { MAIN_NAV_ID, isSiteNavMenuOpen } from "./MainNav.svelte";
+  import { mainNavLinks } from "$lib/utils/navLinks";
 
   // Close the site nav menu when navigating
   $: if ($navigating) $isSiteNavMenuOpen = false;
+
+  const sessionLinks = {
+    home: mainNavLinks.home,
+    dashboard: mainNavLinks.dashboard,
+  };
+
+  const noneSessionLinks = {
+    home: mainNavLinks.home,
+    about: mainNavLinks.about,
+    login: mainNavLinks.login,
+    register: mainNavLinks.register,
+  };
 
   onMount(() => {
     // Prevent scrolling when site nav menu is open
@@ -18,6 +31,7 @@
       unsubscribe();
     };
   });
+  $: isUserLoggedIn = $page.data.isUserLoggedIn;
 </script>
 
 <div class="dropdown dropdown-end">
@@ -45,11 +59,22 @@
     </svg>
   </button>
   <ul
-    tabindex="0"
     class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
   >
-    <li><a>Homepage</a></li>
-    <li><a>Portfolio</a></li>
-    <li><a>About</a></li>
+    {#each Object.values(isUserLoggedIn ? sessionLinks : noneSessionLinks) as link}
+      {@const isCurrentPage =
+        $page.url.pathname === link.href ? "page" : undefined}
+
+      <li>
+        <a
+          href={link.href}
+          aria-label={link.ariaLabel}
+          aria-current={isCurrentPage}
+          class="btn btn-outline"
+        >
+          {link.title}
+        </a>
+      </li>
+    {/each}
   </ul>
 </div>

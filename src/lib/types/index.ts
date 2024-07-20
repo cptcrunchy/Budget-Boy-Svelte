@@ -20,27 +20,31 @@ export type PrettifyType<T> = {
 	[K in keyof T]: T[K];
 } & Record<string, never>;
 
+export type OAuthUser = {
+  id: string;
+	name?: string;
+	avatar_url?: string;
+	email?: string;
+	email_verified?: boolean;
+  login?: string;
+}
 
-export type GoogleUser = {
-	sub: string;
-	name: string;
-	given_name: string;
-	family_name: string;
-	picture: string;
-	email: string;
-	email_verified: boolean;
-	locale: string;
-};
 
 export type RegistrationUser = {
   sub: string;
 	name: string;
-	picture?: string;
+	avatar_url?: string;
 	email: string;
+	email_verified: boolean;
   password: string;
-	isEmailVerified: boolean;
 }
 
+export type GitHubEmail = {
+	email: string;
+	primary: boolean;
+	verified: boolean;
+	visibility: string | null;
+};
 
 export type PendingVerificationUserDataType = {
 	id: string;
