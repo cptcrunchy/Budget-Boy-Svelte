@@ -34,7 +34,7 @@
 <div class="flex flex-col h-svh">
   <SiteMainHeader />
 
-  <main class="container flex-1 p-2 pb-10">
+  <main class="container lg:container-lg flex-1 p-2">
     <slot />
   </main>
   <div class="absolute opacity-20 -z-10">

@@ -76,7 +76,7 @@ export const actions: Actions = {
 			return setError(userLoginFormData, 'password', 'Incorrect password');
 		}
 
-		if (!existingUser.isEmailVerified) {
+		if (!existingUser.email_verified) {
 			throw flashMessageRedirect(
 				route('/auth/email-verification'),
 				{
@@ -124,7 +124,7 @@ export const actions: Actions = {
 				return setError(passwordResetEmailFormData, 'email', NO_REGISTERED_ACCOUNT_ERROR_MESSAGE);
 			}
 
-			if (!existingUser.isEmailVerified) {
+			if (!existingUser.email_verified) {
 				return message(
 					passwordResetEmailFormData,
 					{

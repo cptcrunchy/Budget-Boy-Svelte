@@ -8,18 +8,18 @@ datasource db {
 }
 
 model User {
-  id              String         @id @default(cuid())
-  name            String
-  email           String         @unique
-  xata_updatedat  DateTime       @default(now()) @db.Timestamptz(6)
-  xata_id         String         @unique(map: "User__pgroll_new_xata_id_key") @default(dbgenerated("('rec_'::text || (xata_private.xid())::text)"))
-  xata_version    Int            @default(0)
-  xata_createdat  DateTime       @default(now()) @db.Timestamptz(6)
-  isEmailVerified Boolean
-  avatar_url      String
-  oAuthAccounts   OAuthAccount[]
-  passwords       Password[]
-  sessions        Session[]
+  id             String         @id @default(cuid())
+  name           String
+  email          String         @unique
+  xata_updatedat DateTime       @default(now()) @db.Timestamptz(6)
+  xata_id        String         @unique(map: "User__pgroll_new_xata_id_key") @default(dbgenerated("('rec_'::text || (xata_private.xid())::text)"))
+  xata_version   Int            @default(0)
+  xata_createdat DateTime       @default(now()) @db.Timestamptz(6)
+  email_verified Boolean
+  avatar_url     String
+  oAuthAccounts  OAuthAccount[]
+  passwords      Password[]
+  sessions       Session[]
 }
 
 model OAuthAccount {

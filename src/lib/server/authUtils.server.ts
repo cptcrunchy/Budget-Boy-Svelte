@@ -1,8 +1,8 @@
 import type { Cookies } from "@sveltejs/kit";
 import { RESEND_API_KEY } from '$env/static/private';
 
-import { TimeSpan, generateId, type Lucia } from 'lucia';
-import { createDate, isWithinExpirationDate } from 'oslo';
+import { generateId, type Lucia } from 'lucia';
+import { isWithinExpirationDate } from 'oslo';
 import { alphabet, generateRandomString } from 'oslo/crypto';
 import { Argon2id } from 'oslo/password';
 import { Resend } from 'resend';
@@ -12,12 +12,13 @@ import { route } from '$lib/ROUTES';
 import { EMAIL_VERIFICATION_CODE_LENGTH } from '$validations/authSchemas';
 import { prisma } from './database.server';
 import type { EmailParams, GitHubUser, GoogleUser, OAuthUser, RegistrationUser } from '$lib/types';
+import type { GitHub } from "arctic";
 
 const resend = new Resend(RESEND_API_KEY);
 
 export const GITHUB_OAUTH_STATE_COOKIE_NAME = 'githubOauthState';
-export const GOOGLE_OAUTH_STATE_COOKIE_NAME = 'googleOauthState';
-export const GOOGLE_OAUTH_CODE_VERIFIER_COOKIE_NAME = 'googleOauthCodeVerifier';
+export const GOOGLE_OAUTH_STATE_COOKIE_NAME = 'google_oauth_state';
+export const GOOGLE_OAUTH_CODE_VERIFIER_COOKIE_NAME = 'google_oauth_code_verifier';
 export const PENDING_USER_VERIFICATION_COOKIE_NAME = 'pendingUserVerification';
 
 function createRateLimiter(cookieName: string, cookieSecret: string) {
@@ -90,14 +91,14 @@ export const checkIfUserExists = async (email: string) => {
   return existingUser;
 };
 
-export const getIfOAuthExits = async (providerId: string, googleUser: GoogleUser) => {
+export const getIfOAuthExits = async (providerId: string, googleUser: OAuthUser) => {
   return await prisma.User.findUnique({
     where: {
       email: googleUser.email,
       oAuthAccounts: {
         some: {
           providerId,
-          providerUserId: googleUser.sub,
+          providerUserId: googleUser.id,
         },
       },
     },
@@ -108,18 +109,18 @@ export const updateUserEmail = async(user: RegistrationUser) => {
   await prisma.User.update({
     where: { email: user.email},
     data: {
-      isEmailVerified: true
+      email_verified: true
     }
   })
 }
 
-export const updateUserOAuth = async (user: OAuthUser, providerId: string) => {
+export const updateGithubOAuth = async (user: OAuthUser) => {
   return await prisma.User.update({
     where: { email: user.email },
     data: {
-      oAuthAccunts: {
+      oAuthAccounts: {
         create: {
-          providerId,
+          providerId: 'github',
           providerUserId: user.id,
         },
       },
@@ -127,6 +128,21 @@ export const updateUserOAuth = async (user: OAuthUser, providerId: string) => {
     include: { oAuthAccounts: true },
   });
 };
+
+export const updateGoogleOAuth = async(user: GoogleUser) => {
+  return await prisma.User.update({
+    where: { email: user.email },
+    data: {
+      oAuthAccounts: {
+        create: {
+          providerId: 'google',
+          providerUserId: user.sub,
+        },
+      },
+    },
+    include: { oAuthAccounts: true },
+  });
+}
 
 export const insertNewEmailUser = async (user: RegistrationUser) => {
   return await prisma.user.create({
@@ -144,16 +160,35 @@ export const insertNewEmailUser = async (user: RegistrationUser) => {
     }
   })
 };
-export const insertNewOAuthUser = async(user: GoogleUser | GitHubUser, providerId: string) => {
+
+export const insertNewGithubOAuth = async(user: GitHubUser) => {
+  return await prisma.user.create({
+    data: {
+      id: user.id,
+      name: user.name,
+      email: user.login,
+      avatar_url: user.avatar_url,
+      oAuthAccounts: {
+        create: {
+          providerId: 'github',
+          providerUserId: user.id,
+        },
+      },
+    }
+  })
+}
+
+export const insertNewGoogleOAuth = async(user: GoogleUser) => {
   return await prisma.user.create({
     data: {
       id: user.sub,
       name: user.name,
       email: user.email,
-      avatar_url: user.avatar_url,
-      oAuthAccunts: {
+      email_verified: user.email_verified,
+      avatar_url: user.picture,
+      oAuthAccounts: {
         create: {
-          providerId,
+          providerId: 'google',
           providerUserId: user.sub,
         },
       },

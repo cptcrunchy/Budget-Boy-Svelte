@@ -6,11 +6,11 @@ import {
 	checkIfUserExists,
 	createAndSetSession,
   getIfOAuthExits,
-  insertNewOAuthUser,
-  updateUserOAuth
+  insertNewGithubOAuth,
+  updateGithubOAuth,
 } from '$lib/server/authUtils.server';
 import { githubOauth, lucia } from '$lib/server/luciaAuth.server';
-import type { GitHubEmail, OAuthUser } from '$lib/types';
+import type { GitHubEmail, GitHubUser, OAuthUser } from '$lib/types';
 
 
 export const GET: RequestHandler = async (event) => {
@@ -42,7 +42,7 @@ export const GET: RequestHandler = async (event) => {
 			}
 		});
 
-		const githubUser = (await githubUserResponse.json()) as OAuthUser;
+		const githubUser = (await githubUserResponse.json()) as GitHubUser;
 		const githubEmail = (await githubEmailResponse.json()) as GitHubEmail[];
 
 		const primaryEmail = githubEmail.find((email) => email.primary) ?? null;
@@ -67,12 +67,12 @@ export const GET: RequestHandler = async (event) => {
 
 			if (!existingOauthAccount) {
 				// Add the 'github' auth provider to the user's authMethods list
-        await updateUserOAuth(existingUser, "github");
+        await updateGithubOAuth(existingUser);
 			}
 			await createAndSetSession(lucia, existingUser.id, event.cookies);
 		} else {
 			// Create a new user and link the GitHub OAuth account
-			const newUser = await insertNewOAuthUser(githubUser, "google");
+			const newUser = await insertNewGithubOAuth(githubUser);
 			await createAndSetSession(lucia, newUser.id, event.cookies);
 		}
 

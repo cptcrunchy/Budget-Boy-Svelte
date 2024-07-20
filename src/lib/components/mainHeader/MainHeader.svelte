@@ -7,7 +7,7 @@
 </script>
 
 <header class="relative mb-10 border-b">
-  <div class="container flex items-center justify-between p-2">
+  <div class="flex items-center justify-between p-2">
     <div class="avatar">
       <a href={route("/")} class="w-24">
         <img src="/assets/logo.svg" alt="Budget Boy" />

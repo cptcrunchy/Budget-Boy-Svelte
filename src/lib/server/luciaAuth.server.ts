@@ -8,7 +8,6 @@ import {
 import { GitHub, Google } from "arctic";
 import { PrismaAdapter } from '@lucia-auth/adapter-prisma';
 import { Lucia } from 'lucia';
-import { route } from "$lib/ROUTES";
 
 import { prisma } from './database.server';
 
@@ -17,7 +16,7 @@ const dbAdapter = new PrismaAdapter(prisma.session, prisma.user);
 export const googleOauth = new Google(
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
-  route('GET /auth/oauth/google/callback')
+  'http://localhost:5173/auth/oauth/google/callback'
 );
 
 export const githubOauth = new GitHub(
@@ -35,7 +34,7 @@ export const lucia = new Lucia(dbAdapter, {
 		return {
 			name: attributes.name,
 			email: attributes.email,
-			isEmailVerified: attributes.isEmailVerified,
+			email_verified: attributes.email_verified,
 			authMethods: attributes.authMethods,
 			avatarUrl: attributes.avatarUrl
 		};
@@ -49,7 +48,7 @@ declare module 'lucia' {
 			name: string;
 			email: string;
       avatar_url: string;
-			isEmailVerified: boolean;
+			email_verified: boolean;
 			authMethods: string[];
 			avatarUrl: string;
 		};

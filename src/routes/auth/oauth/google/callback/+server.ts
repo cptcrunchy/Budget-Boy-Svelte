@@ -7,11 +7,11 @@ import {
 	checkIfUserExists,
 	createAndSetSession,
   getIfOAuthExits,
-  insertNewOAuthUser,
-  updateUserOAuth
+  insertNewGoogleOAuth,
+  updateGoogleOAuth
 } from '$lib/server/authUtils.server';
 import { googleOauth, lucia } from '$lib/server/luciaAuth.server';
-import type { OAuthUser } from '$lib/types';
+import type { GoogleUser, OAuthUser } from '$lib/types';
 
 export const GET: RequestHandler = async (event) => {
 	const code = event.url.searchParams.get('code');
@@ -36,7 +36,7 @@ export const GET: RequestHandler = async (event) => {
 			}
 		});
 
-		const googleUser = (await googleUserResponse.json()) as OAuthUser;
+		const googleUser = (await googleUserResponse.json()) as GoogleUser;
 
 		if (!googleUser.email) {
 			return new Response('No primary email address', {
@@ -50,6 +50,8 @@ export const GET: RequestHandler = async (event) => {
 			});
 		}
 
+    console.log({ googleUser })
+
 		// Check if the user already exists
 		const existingUser = await checkIfUserExists(googleUser.email);
 
@@ -59,12 +61,12 @@ export const GET: RequestHandler = async (event) => {
 
 			if (!existingOauthAccount) {
 				// Add the 'google' auth provider to the user's authMethods list
-				await updateUserOAuth(googleUser, "google");
+				await updateGoogleOAuth(googleUser);
 			}
 			await createAndSetSession(lucia, existingUser.id, event.cookies);
 		} else {
 			// Create a new user and their OAuth account
-      const newUser = await insertNewOAuthUser(googleUser, "google");
+      const newUser = await insertNewGoogleOAuth(googleUser);
 			await createAndSetSession(lucia, newUser.id, event.cookies);
 		}
 

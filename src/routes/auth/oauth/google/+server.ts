@@ -38,6 +38,6 @@ export const GET: RequestHandler = async ({ cookies }) => {
 		sameSite: 'lax'
 	});
 
-	// Redirect the user to the GitHub OAuth authorization URL
+	// Redirect the user to the Google OAuth authorization URL
 	redirect(HTTP.MOVED_TEMPORARILY, url);
 };

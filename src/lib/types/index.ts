@@ -21,7 +21,7 @@ export type PrettifyType<T> = {
 } & Record<string, never>;
 
 export type OAuthUser = {
-  id: string;
+  id: string | number;
 	name?: string;
 	avatar_url?: string;
 	email?: string;
@@ -29,6 +29,22 @@ export type OAuthUser = {
   login?: string;
 }
 
+export type GoogleUser = {
+  sub: string;
+  name: string;
+  given_name: string;
+  family_name: string;
+  picture: string;
+  email: string;
+  email_verified: boolean;
+}
+
+export type GitHubUser = {
+	id: number;
+	login: string;
+	avatar_url: string;
+	name: string;
+}
 
 export type RegistrationUser = {
   sub: string;
