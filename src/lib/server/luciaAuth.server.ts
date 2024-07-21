@@ -36,7 +36,7 @@ export const lucia = new Lucia(dbAdapter, {
 			email: attributes.email,
 			email_verified: attributes.email_verified,
 			authMethods: attributes.authMethods,
-			avatarUrl: attributes.avatarUrl
+			avatar_url: attributes.avatar_url
 		};
 	}
 });

@@ -1,4 +1,5 @@
-import type { Handle } from "@sveltejs/kit";
+import { redirect, type Handle } from "@sveltejs/kit";
+import { StatusCodes as HTTP } from "http-status-codes";
 import { sequence } from "@sveltejs/kit/hooks";
 import { createAndSetSession, deleteSessionCookie } from "$lib/server/authUtils.server";
 import { lucia } from "$lib/server/luciaAuth.server";
@@ -24,15 +25,20 @@ const luciaGuard: Handle = async ({ event, resolve }) => {
 };
 
 const authGuard: Handle = async ({ event, resolve }) => {
-  const { user } = event.locals;
+  const { user, session } = event.locals;
 
   if (user) {
     const userInfo = await prisma.user.findUnique({
       where: { id: user.id },
       include: { oAuthAccounts: true },
     });
-    user.OAuthAccounts = userInfo.oAuthAccounts;
+    user.authMethods = userInfo.oAuthAccounts;
   }
+
+  if (session && event.url.pathname === "/") {
+    redirect(HTTP.MOVED_TEMPORARILY, '/dashboard');
+  }
+
 
   return resolve(event);
 };

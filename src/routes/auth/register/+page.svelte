@@ -91,8 +91,9 @@
     </div>
   </div>
   <p class="mt-5 font-bold text-sm tracking-wide">
-    Already have an account? <a href="/auth/login" class="text-[--theme-green]"
-      >Log in</a
+    Already have an account? <a
+      href={route("/auth/login")}
+      class="text-[--theme-green]">Log in</a
     >!
   </p>
 </div>

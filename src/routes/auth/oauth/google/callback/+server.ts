@@ -50,8 +50,6 @@ export const GET: RequestHandler = async (event) => {
 			});
 		}
 
-    console.log({ googleUser })
-
 		// Check if the user already exists
 		const existingUser = await checkIfUserExists(googleUser.email);
 

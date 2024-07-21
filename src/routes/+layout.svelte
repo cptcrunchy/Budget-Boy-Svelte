@@ -11,10 +11,11 @@
 
   import "../app.css";
 
-  import SiteMainHeader from "$components/mainHeader/MainHeader.svelte";
+  import MainHeader from "$components/mainHeader/MainHeader.svelte";
   import type { PageData } from "./$types";
 
   export let data: PageData;
+  const { user } = data;
 
   const flash = getFlash(page);
 
@@ -32,9 +33,9 @@
 <Toaster position={"top-center"} />
 
 <div class="flex flex-col h-svh">
-  <SiteMainHeader />
+  <MainHeader {user} />
 
-  <main class="container lg:container-lg flex-1 p-2">
+  <main class="h-full p-2">
     <slot />
   </main>
   <div class="absolute opacity-20 -z-10">

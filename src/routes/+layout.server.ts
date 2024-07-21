@@ -4,11 +4,11 @@ import { loadFlash } from 'sveltekit-flash-message/server';
 
 import { createBaseMetaTags } from '$lib/utils/metaTags';
 
-export const load = loadFlash(async ({ url, locals: { session } }) => {
+export const load: LayoutServerLoad = loadFlash(async ({ url, locals }) => {
 	const baseMetaTags = createBaseMetaTags(url);
-
 	return {
-		isUserLoggedIn: session !== null,
+    user: locals.user,
+		isUserLoggedIn: locals.session !== null,
 		baseMetaTags: Object.freeze(baseMetaTags)
 	};
-}) satisfies LayoutServerLoad;
+});

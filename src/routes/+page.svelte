@@ -1,3 +1,7 @@
+<script>
+  import { route } from "$lib/ROUTES";
+</script>
+
 <div class="home-container">
   <div
     class="flex flex-col md:flex-row md:flex-wrap items-center justify-center gap-12 p-10"
@@ -19,7 +23,7 @@
       <a
         role="button"
         class="btn btn-action bg-[--theme-green] text-white w-52 text-lg uppercase border-none"
-        href="/auth/register"
+        href={route("/auth/register")}
       >
         Get Started
       </a>
