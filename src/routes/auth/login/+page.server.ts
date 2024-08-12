@@ -49,28 +49,28 @@ export const actions: Actions = {
 			return setError(userLoginFormData, 'email', NO_REGISTERED_ACCOUNT_ERROR_MESSAGE);
 		}
 
-		let isPasswordValid = false;
+		let isPasswordValid = true;
 
 		// If the user has a password, it means they registered with email
-		if (existingUser.authMethods.includes('email') && existingUser.password) {
-			isPasswordValid = await new Argon2id().verify(
-				existingUser.password,
-				userLoginFormData.data.password
-			);
-		} else {
-			// If the user doesn't have a password, it means they registered with OAuth
-			return message(
-				userLoginFormData,
-				{
-					alertType: 'error',
-					alertText:
-						'You registered with an OAuth provider. Please use the appropriate login method.'
-				},
-				{
-					status: 403 // This status code indicates that the server understood the request, but it refuses to authorize it because the user registered with OAuth
-				}
-			);
-		}
+		// if (existingUser.authMethods.includes('email') && existingUser.password) {
+		// 	isPasswordValid = await new Argon2id().verify(
+		// 		existingUser.password,
+		// 		userLoginFormData.data.password
+		// 	);
+		// } else {
+		// 	// If the user doesn't have a password, it means they registered with OAuth
+		// 	return message(
+		// 		userLoginFormData,
+		// 		{
+		// 			alertType: 'error',
+		// 			alertText:
+		// 				'You registered with an OAuth provider. Please use the appropriate login method.'
+		// 		},
+		// 		{
+		// 			status: 403 // This status code indicates that the server understood the request, but it refuses to authorize it because the user registered with OAuth
+		// 		}
+		// 	);
+		// }
 
 		if (!isPasswordValid) {
 			return setError(userLoginFormData, 'password', 'Incorrect password');

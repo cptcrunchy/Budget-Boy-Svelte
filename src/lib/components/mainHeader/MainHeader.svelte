@@ -62,11 +62,13 @@
             </li>
           {/if}
         </ul>
-        <div role="button" class="btn btn-ghost btn-circle avatar">
-          <div class="w-10 rounded-full">
-            <img alt={user.name} src={user.avatar_url} />
+        {#if user}
+          <div role="button" class="btn btn-ghost btn-circle avatar">
+            <div class="w-10 rounded-full">
+              <img alt={user?.name} src={user?.avatar_url} />
+            </div>
           </div>
-        </div>
+        {/if}
       </nav>
       <ThemeToggler />
       <MainNavMenuToggleBtn />

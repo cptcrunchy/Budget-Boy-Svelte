@@ -66,8 +66,10 @@ export const passwordResetDashboardPageActionRateLimiter = createRateLimiter(
 );
 
 export const createAndSetSession = async (lucia: Lucia, userId: string, cookies: Cookies) => {
+  
 	const session = await lucia.createSession(userId, {});
-	const sessionCookie = lucia.createSessionCookie(session.id);
+	console.log({ userId, session });
+  const sessionCookie = lucia.createSessionCookie(session.id);
 
 	cookies.set(sessionCookie.name, sessionCookie.value, {
 		path: '.',
